@@ -11,6 +11,7 @@ sequences (in a multifasta file) can be scored against the profiles and a high-s
 list will be presented.
 
 If you use this software in any work of research, please cite:
+
 Dalevi D, Dubhashi D, Hermansson M. (2006)
 Bayesian classifiers for detecting HGT using fixed and variable order markov models of genomic signatures.
 Bioinformatics. 2006 Mar 1;22(5):517-22. 
