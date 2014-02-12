@@ -1,0 +1,4693 @@
+%!PS-Adobe-3.0
+%%Title: Alphabet.h, Tree.h, Tree.cpp, PstTree.h, PstTree.cpp
+%%For: 
+%%Creator: a2ps version 4.13
+%%CreationDate: Tue Oct 24 15:53:41 2006
+%%BoundingBox: 24 24 571 818
+%%DocumentData: Clean7Bit
+%%Orientation: Landscape
+%%Pages: 18
+%%PageOrder: Ascend
+%%DocumentMedia: a4 595 842 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontMatrix get 3 get 1000 mul
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Define these in case they're not in the FontInfo (also, here
+    % they're easier to get to.
+    /UnderlinePosition 1 def
+    /UnderlineThickness 1 def
+    
+    % Get the underline position and thickness if they're defined.
+    currentdict /FontInfo known {
+      FontInfo
+      
+      dup /UnderlinePosition known {
+	dup /UnderlinePosition get
+	0 exch FontMatrix transform exch pop
+	/UnderlinePosition exch def
+      } if
+      
+      dup /UnderlineThickness known {
+	/UnderlineThickness get
+	0 exch FontMatrix transform exch pop
+	/UnderlineThickness exch def
+      } if
+      
+    } if
+    currentdict 
+  end 
+} bind def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 595 def
+/sw 842 def
+/llx 24 def
+/urx 818 def
+/ury 571 def
+/lly 24 def
+/#copies 1 def
+/th 15.000000 def
+/fnfs 11 def
+/bfs 8.005733 def
+/cw 4.803440 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 81.400000 mul
+def
+/ph
+   501.959430 th add
+def
+/pmw urx llx sub pw 2 mul sub 1 div def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+  dup pmw add pw add
+] def
+/y [
+  pmh ph add 0 mul ph add
+  dup
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 0 def
+/tab 8 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1-2) 1
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(// Copyright \(C\) 2005 Daniel Dalevi) c n
+(// Distributed under the GNU GENERAL PUBLIC LICENSE version 2) N
+() p n
+(#ifndef) K
+( xxxALPHABETxxx) p n
+(#define) K
+( xxxALPHABETxxx) p n
+() N
+() N
+() N
+(#include) K
+( <string>) p n
+(#include) K
+( <vector>) p n
+(#include) K
+( <cassert>) p n
+(#include) K
+( <iostream>) p n
+() N
+(using namespace std;) N
+() N
+(/**) c n
+( * This class stores all information needed for repressenting an alphabet of cha) N
+(racters,) N
+( * \\author Daniel Dalevi) N
+( * \\date 2005-05-30) N
+( */) N
+(class Alphabet ) p n
+({) N
+(public:) N
+() N
+(  ) S
+(/**) c n
+(   * The following alphabets are defined) N
+(   */) N
+(  ) p
+(enum) k
+( ALPHABET {) p n
+(    BINARY,   ) S
+(/**< { 0, 1 } */) c n
+(    DNA,      ) p
+(/**< { A, C, G, T } */) c n
+(    PROTEIN   ) p
+(/**< { A, B, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W,) c n
+( X, Y, Z } */) N
+(  };) p n
+() N
+(  ) S
+(static) K
+( ) p
+(const) K
+( ) p
+(int) k
+( MAX_CHECK = 50;) p n
+() N
+(  Alphabet\(\) ) N
+(  {) N
+(    l_ = "";) N
+(    name_ = ") S
+(none) str
+(";) p n
+(    ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < 1000; ++i \)) p n
+(      {) N
+() S 8 T (myMap_.push_back\( -1 \);) N
+(      }) N
+(  }) N
+() N
+() N
+(  ) S
+(/**) c n
+(   * checks wheter c belongs to alphabet) N
+(   * if true returns position in alphabet) N
+(   * else returns -1) N
+(   */) N
+(  ) p
+(int) k
+( getIndex\( ) p
+(const) K
+( ) p
+(char) k
+(& c \) ) p
+(const) K n
+(  {) p n
+(    ) S
+(return) K
+( myMap_[ c ];) p n
+(  }) N
+(  ) N
+() N
+() N
+(  ) S
+(/**) c n
+(   * Returns the corresponding letter of index i in ) N
+(Alphabet.h) (Sidan 1/3) (13 sep 06 13:54) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(   * the alphabet) c n
+(   */) N
+(  ) p
+(char) k
+( getChar\( ) p
+(const) K
+( ) p
+(int) k
+(& i \) ) p
+(const) K n
+(  {) p n
+(    assert\( i < l_.size\(\) \);) N
+(    ) S
+(return) K
+( l_[i];) p n
+(  }) N
+(  ) N
+() N
+(  ) S
+(void) k
+( setAlphabet\( ALPHABET a \)) p n
+(  {) N
+(    ) S
+(switch) K
+(\( a \)) p n
+(      {) N
+(      ) S
+(case) K
+( BINARY:) p n
+() S 8 T ({) N
+() S 8 T (  name_ = ") S
+(binary) str
+(";) p n
+() S 8 T (  l_ = ") S
+(01) str
+(";) p n
+() S 8 T (  myMap_[ ') S
+(0) str
+(' ] = 0;) p n
+() S 8 T (  myMap_[ ') S
+(1) str
+(' ] = 1;) p 32 T (  ) N
+() S 8 T (  ) S
+(break) K
+(;) p n
+() S 8 T (}) N
+(      ) S
+(case) K
+( DNA:) p n
+() S 8 T ({) N
+() S 8 T (  name_ =  ") S
+(DNA) str
+(";) p n
+() S 8 T (  l_ = ") S
+(ACGT) str
+(";) p n
+() S 8 T (  string ll = ") S
+(acgt) str
+(";) p n
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < l_.size\(\); ++i \)) p n
+() S 8 T (    {) N
+() S 8 T (      myMap_[ l_[ i ] ] = i;) N
+() S 8 T (    }) N
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < ll.size\(\); ++i \)) p n
+() S 8 T (    {) N
+() S 8 T (      myMap_[ ll[ i ] ] = i;) N
+() S 8 T (    }) N
+() S 8 T (  ) S
+(break) K
+(;) p n
+() S 8 T (}) N
+(      ) S
+(case) K
+( PROTEIN:) p n
+() S 8 T ({) N
+() S 8 T (  name_ = ") S
+(PROTEIN) str
+(";) p n
+() S 8 T (  l_ = ") S
+(ABCDEFGHIKLMNPQRSTVWXYZ.) str
+(";  ) p n
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < l_.size\(\); ++i \)) p n
+() S 8 T (    {) N
+() S 8 T (      myMap_[ l_[ i ] ] = i;) N
+() S 8 T (    }) N
+() N
+() S 8 T (  ) S
+(/* Here X = unknown) c n
+() S 8 T (   * B = Aspartic acid or asparagine, ) N
+() S 8 T (   * Z = Glutamic acid or glutamine, ) N
+() S 8 T (   * "." = terminator ) N
+() S 8 T (   */) N
+() p 8 T (  ) S
+(break) K
+(;) p n
+() S 8 T (}) N
+(      ) S
+(default) K
+(:) p n
+() S 8 T ({) N
+() S 8 T (  cerr << ") S
+(No such alphabet!) str
+(";) p n
+() S 8 T (  exit\( 1 \);) N
+() S 8 T (}) N
+() N
+(      }) N
+(  } ) N
+() N
+(  bool testWord\( ) S
+(const) K
+( string& s \) ) p
+(const) K n
+(Alphabet.h) (Sidan 2/3) (13 sep 06 13:54) title
+border
+grestore
+(Utskrivet av ) rhead
+(../common/Alphabet.h) (1/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 2
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(  {) p n
+(    bool integrity = true;) N
+(    ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < s.size\(\); ++i \)) p n
+(      {) N
+() S 8 T () S
+(if) K
+(\( getIndex\( s[i] \) == -1 \) integrity = false;) p n
+() S 8 T () S
+(if) K
+(\( i > Alphabet::MAX_CHECK \) ) p
+(break) K
+(;) p n
+(      }) N
+(    ) S
+(return) K
+( integrity;) p n
+(  }) N
+() N
+(  string getName\(\) ) S
+(const) K
+( { ) p
+(return) K
+( name_; }) p n
+(  ) S
+(void) k
+( setAlphabet\( ) p
+(const) K
+( string& name \)) p n
+(  {) N
+(    ) S
+(if) K
+(\( name == ") p
+(BINARY) str
+(" \) setAlphabet\( BINARY \);) p n
+(    ) S
+(if) K
+(\( name == ") p
+(DNA) str
+(" \) setAlphabet\( DNA \);) p n
+(    ) S
+(if) K
+(\( name == ") p
+(PROTEIN) str
+(" \) setAlphabet\( PROTEIN \);) p n
+(  }) N
+() N
+(  size_t size\(\) ) S
+(const) K
+( { ) p
+(return) K
+( l_.size\(\); }) p n
+(  ) N
+(  string toString\(\) ) S
+(const) K
+( { ) p
+(return) K
+( l_; }) p n
+(  ) N
+() N
+(private:) N
+(  string l_;) N
+(  vector<) S
+(int) k
+(> myMap_;) p n
+(  string name_;) N
+(};) N
+() N
+(#endif) K n
+(Alphabet.h) (Sidan 3/3) (13 sep 06 13:54) title
+border
+grestore
+(Utskrivet av ) rhead
+(../common/Alphabet.h) (2/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1-2) 3
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(// Copyright \(C\) 2005 Daniel Dalevi) c n
+(// Distributed under the GNU GENERAL PUBLIC LICENSE version 2) N
+() p n
+(#ifndef) K
+( xxxTREExxx) p n
+(#define) K
+( xxxTREExxx) p n
+() N
+(#include) K
+( <algorithm>) p n
+(#include) K
+( <fstream>) p n
+(#include) K
+( <string>) p n
+(#include) K
+( <Exception.h>) p n
+(#include) K
+( <StringTokenizer.h>) p n
+(#include) K
+( <Alphabet.h>) p n
+(#include) K
+( <new>) p n
+(#include) K
+( ") p
+(TreeModifier.h) str
+(") p n
+() N
+(using namespace std;) N
+() N
+(/**) c n
+( * Contains all basic members needed to make different types) N
+( * of trees for Markov models) N
+( */) N
+(namespace trees) p n
+({) N
+(  ) N
+(  class Node;) N
+(  class Exception;) N
+() N
+(  ) S
+(/**) c n
+(   *  To provide a common interface for all trees used in repressenting ) N
+(   *          Markov models for different alpabets.) N
+(   * \\author  Daniel Dalevi) N
+(   * \\version 1.0) N
+(   * \\date 2005-05-30) N
+(   */) N
+(  class Tree ) p n
+(  {) N
+(    ) N
+(  protected:) N
+(    ) S
+(static) K
+( ) p
+(int) k
+( DEPTH;) p n
+(    ) S
+(static) K
+( ) p
+(const) K
+( string BADALPHABET;) p n
+() N
+(  public:) N
+(    ) S
+(/** ) c n
+(     * Default constructor. \\note class requires Alphabet so the use of ) N
+(     * this constructor should be avoided. ) N
+(     * \\see Alphabet.h) N
+(     */) S
+( ) p n
+(    Tree\(\);) N
+() N
+(    ) S
+(/**) c n
+(     * \\param alp Alphabet) N
+(     * \\param wl maximum word-length) N
+(     */) S
+( ) p n
+(    Tree\( ) S
+(const) K
+( Alphabet* alp, ) p
+(const) K
+( ) p
+(int) k
+(& wl \); ) p n
+() N
+(    ) S
+(/** ) c n
+(     * Will call method cleanUp-method on head-node. \\see cleanUp\( Node* pNode \)) N
+(     */) S
+( ) p n
+(    virtual ~Tree\(\);) N
+() N
+(    ) S
+(/** ) c n
+(     * Will call delete on pNode and all its children.) N
+(Tree.h) (Sidan 1/8) (13 sep 06 13:58) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     */) c
+( ) p n
+(    ) S
+(void) k
+( cleanUp\( Node* pNode \);) p n
+() N
+() N
+(    ) S
+(/**) c n
+(     * Function that will transform probabilities to non-cumulative) N
+(     * ones) N
+(     */) N
+(    ) p
+(void) k
+( adjustNextSymbolCount\(\);) p n
+() N
+(    ) S
+(/**) c n
+(     * Function that will recursivly add pseudo-counts) N
+(     * to all nodes where next-symbol-probabilities are) N
+(     * equal to zero!) N
+(     */) N
+(    ) p
+(void) k
+( addPseudoCounts\(\);) p n
+() N
+() N
+(    ) S
+(/**) c n
+(     * Auxiliary function) N
+(     */) N
+(    ) p
+(void) k
+( setHeadForTM\( TreeModifier* tm \) ) p
+(const) K
+( { tm->setHead\( head_ \); }) p n
+() N
+() N
+(    ) S
+(void) k
+( addPseudoCounts\( Node* \);) p n
+() N
+(    ) S
+(/**) c n
+(     * Will add count of one to all children of Node*,) N
+(     * and their childres and so on...) N
+(     */) N
+(    ) p
+(void) k
+( propagatePseudoCounts\( Node* \);) p n
+() N
+(    ) S
+(/**) c n
+(     * Estimating the order of a fixed order Markov chains) N
+(     * \\return integer  ) N
+(     */) N
+(    ) p
+(int) k
+( getFixedOrder\(\) ) p
+(const) K n
+(    {) p n
+(      ) S
+(return) K
+( treeMod_->getOrder\(\);) p n
+(    }) N
+() N
+(    ) S
+(/**) c n
+(     * Assigns name to tree) N
+(     * \\param n name ) N
+(     */) N
+(    ) p
+(void) k
+( setName\( ) p
+(const) K
+( string& n \) { name_ = n; }) p n
+() N
+(    ) S
+(/**) c n
+(     * The node id is an integer specific to a node.) N
+(     * \\param pNode node to assign id) N
+(     * \\param id identifier) N
+(     */) N
+(    ) p
+(void) k
+( setNodeId\( Node* pNode, ) p
+(int) k
+(& id \);) p n
+() N
+(    ) S
+(/**) c n
+(     * \\return name of tree) N
+(     */) N
+(    string getName\(\) ) p
+(const) K
+( { ) p
+(return) K
+( name_; }) p n
+(  ) N
+(    ) S
+(/**) c n
+(     * Assigns the next-symbol-probabilities associated with a node.) N
+(     * Called after sequences have been inserted into tree ) N
+(Tree.h) (Sidan 2/8) (13 sep 06 13:58) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.h) (3/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3-4) 4
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     * \\see insert\( const string& \)  ) c n
+(     */) N
+(    ) p
+(void) k
+( setProbabilities\(\);) p n
+(    ) N
+(    ) S
+(/**) c n
+(     * Function to specify the use of non-cumulative probabilities.) N
+(     * It must be set to true if evaluating the AIC of a model.) N
+(     * \\param b boolean) N
+(     * \\see getAIC\( const string& s \) ) N
+(     * \\see prune\( const double& cutoff \) ) N
+(     * \\see prune\( const int& num \) ) N
+(     * \\see adjustNextSymbolCount\( Node* \)) N
+(     */) N
+(    ) p
+(void) k
+( useAdjustedProbabilities\( ) p
+(const) K
+( bool& b \) { useAdj_ = b; }) p n
+( ) N
+(    ) S
+(/**) c n
+(     * \\see setProbabilities\(\)) N
+(     */) N
+(    ) p
+(void) k
+( setProbabilities\( Node* \);) p n
+() N
+() N
+(    ) S
+(/**) c n
+(     * This function will specify which algorithm to use when pruning the tree) N
+(     * If none specified, no pruning!) N
+(     * \\param tm pointer to TreeModifier) N
+(     * \\note function deletes previous instances of TreeModifier) N
+(     */) S
+( ) p n
+(    ) S
+(void) k
+( setTreeModifier\( TreeModifier* tm \);) p n
+(    ) N
+() N
+(    ) S
+(/**) c n
+(     * Will print a sequence according to the specified model.) N
+(     * \\param l length) N
+(     */) N
+(    ) p
+(void) k
+( printRandomSequence\( ) p
+(const) K
+( ) p
+(int) k
+(& l \);) p n
+() N
+(    ) S
+(/**) c n
+(     * generates a random sequence according to model) N
+(     * \\param l = length) N
+(     * \\param s = seed) N
+(     */) N
+(    string getRandomSequence\( ) p
+(const) K
+( ) p
+(int) k
+(& l, ) p
+(const) K
+( ) p
+(int) k
+(& s = -1 \);) p n
+() N
+(    ) S
+(/**) c n
+(     * \\see save\(\)) N
+(     */) N
+(    ) p
+(void) k
+( save\( Node*, ofstream& \);) p n
+() N
+(    ) N
+(    ) S
+(/**) c n
+(     * \\return double, negative log-likelihood of model) N
+(     */) N
+(    ) p
+(double) k
+( getNLL\(\);) p n
+() N
+() N
+(    ) S
+(/**) c n
+(     * \\return double, negative log-likelihood) N
+(     */) N
+(    ) p
+(void) k
+(  getNLL\( Node*, ) p
+(double) k
+(&\);) p n
+() N
+(    ) S
+(/**) c n
+(     * \\return double, negative log-likelihood of string) N
+(Tree.h) (Sidan 3/8) (13 sep 06 13:58) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     * \\param s string of symbols ) c n
+(     */) N
+(    virtual ) p
+(double) k
+( getNLL\( ) p
+(const) K
+( string& s \) {}) p n
+() N
+(    ) S
+(/**) c n
+(     * Not yet implemented, should use pseudo-counts) N
+(     * when probabilities are undefined.) N
+(     */) N
+(    virtual ) p
+(double) k
+( getPseudoNLL\(  ) p
+(const) K
+( string&, ) p
+(const) K
+( ) p
+(double) k
+(& \) {}) p n
+() N
+(    ) S
+(/**) c n
+(     * Function returning the depth of tree) N
+(     */) N
+(    ) p
+(int) k
+( depth\(\);) p n
+() N
+(    ) S
+(/**) c n
+(     * prints nucleotide frequencies. ) N
+(     */) N
+(    virtual ) p
+(void) k
+( print\(\) ) p
+(const) K
+(;) p
+(//  const bool& = false \) const;) c n
+() p n
+(    ) S
+(/**) c n
+(     * Draw a PST diagram of the model in a similar fashion as ) N
+(     * done in "R") N
+(     */) N
+(    ) p
+(void) k
+( draw\(\) ) p
+(const) K
+(;) p n
+() N
+(    ) S
+(/**) c n
+(     * \\see draw\(\)) N
+(     */) N
+(    ) p
+(void) k
+( draw\( Node*, string \) ) p
+(const) K
+(;) p n
+() N
+(    ) S
+(/**) c n
+(     * Saves tree into a text file ) N
+(     * \\param filename name of file) N
+(     */) N
+(    ) p
+(void) k
+( save\( ) p
+(const) K
+( string& filename \);) p n
+() N
+(    ) S
+(/**) c n
+(     * Loads a saved tree into memory) N
+(     * \\param filename name of file) N
+(     */) S
+(    ) p n
+(    ) S
+(void) k
+( load\( ) p
+(const) K
+( string& filename \);) p n
+() N
+(    ) N
+(    ) S
+(/**) c n
+(     * \\param s string of which to find the count \\f$N\(s\)\\f$) N
+(     * \\return \\f$N\(s\)\\f$) N
+(     */) N
+(    ) p
+(double) k
+( getCount\( ) p
+(const) K
+( string& s \) ) p
+(const) K
+(;) p n
+() N
+(    ) S
+(/**) c n
+(     * This function returns the count of the prefix of the pattern "pat" <br>) N
+(     * It must be used for calculating the transition probabilities <br>) N
+(     * since the trees are stooring data in the opposite direction. <br>) N
+(     * TTAAA is inserted as: <br>) N
+(     * A->AA->AAA->AAAT->AAATT  <br>) N
+(     * prob\(AAATT\) = N\(TTAAA\)/N\(TAAA*\) ) N
+(     * \\return \\f$N\(a_1...a_{n-1}*\)\\f$ \(double\)  ) N
+(     */) N
+(    ) p
+(double) k
+( getSuffixCount\( ) p
+(const) K
+( string& \) ) p
+(const) K
+(;) p n
+() N
+(    ) S
+(/**) c n
+(Tree.h) (Sidan 4/8) (13 sep 06 13:58) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.h) (4/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5-6) 5
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     * If no argument given, the model will be evalutated) c n
+(     * \\param s string) N
+(     * \\return AIC of the string s or by default the model) N
+(     */) N
+(    ) p
+(double) k
+( getAIC\( ) p
+(const) K
+( string& s = "" \);) p n
+() N
+(    ) S
+(/**) c n
+(     * If no argument given, the model will be evalutated) N
+(     * \\param s string) N
+(     * \\return BIC of the string s ) N
+(     */) N
+(    ) p
+(double) k
+( getBIC\( ) p
+(const) K
+( string& s = "" \);) p n
+() N
+(    ) S
+(/**) c n
+(     * \\return the count of all nodes, ie. the number of data) N
+(     */) N
+(    ) p
+(double) k
+( getTotalTotal\(\);) p n
+() N
+() N
+(    ) S
+(/**) c n
+(     * \\see getTotalTotal\(\)) N
+(     */) N
+(    ) p
+(void) k
+( totalTotal\( Node*, ) p
+(double) k
+(& \);) p n
+() N
+() N
+(    ) S
+(/**) c n
+(     * Resets static variables in Node) N
+(     */) N
+(    ) p
+(void) k
+( sReset\(\);) p n
+() N
+(    ) S
+(/**) c n
+(     * clear the entire Tree) N
+(     */) N
+(    ) p
+(void) k
+( clear\(\);) p n
+(    ) N
+(    ) S
+(/**) c n
+(     * Funciton for inserting a sequence into the tree) N
+(     * \\param seq string to insert into tree) N
+(     */) N
+(    virtual ) p
+(void) k
+( insert\( ) p
+(const) K
+( string& seq \) {}) p n
+() N
+(    ) S
+(/**) c n
+(     * Function removing all nodes with a count ) N
+(     * less than \\"-minc\\") N
+(     */) N
+(    virtual ) p
+(void) k
+( constrainTree\( ) p
+(const) K
+( ) p
+(int) k
+(& \) {}) p n
+(    ) N
+(    ) S
+(/**) c n
+(     * The pruning has been aggregated to the ) N
+(     * class TreeModifier. This function was designed) N
+(     * for constraining a tree to a specific number) N
+(     * of parameters.) N
+(     * \\param npar integer) N
+(     */) N
+(    ) p
+(void) k
+( prune\( ) p
+(const) K
+( ) p
+(int) k
+(& npar \);) p n
+() N
+(    ) S
+(/**) c n
+(     * The pruning has been aggregated to the ) N
+(     * class TreeModifier. This function can ) N
+(     * supply a cut-off to the pruning) N
+(     * algorithms) N
+(     * \\param cutoff double) N
+(Tree.h) (Sidan 5/8) (13 sep 06 13:58) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     */) c n
+(    ) p
+(void) k
+( prune\( ) p
+(const) K
+( ) p
+(double) k
+(& cutoff \);) p n
+() N
+(    ) S
+(/**) c n
+(     * Different derived classes should be able to) N
+(     * print the repressentation differently) N
+(     */) N
+(    virtual ) p
+(void) k
+( print\( Node* \) ) p
+(const) K
+(;) p n
+() N
+(    ) S
+(/**) c n
+(     * \\param s string) N
+(     * \\return probability of the string s according to model) N
+(     */) N
+(    virtual ) p
+(double) k
+( prob\( ) p
+(const) K
+( string& \);) p n
+() N
+(    ) S
+(//    void printTmp\( Node* \) const;) c n
+() p n
+(    ) S
+(/**) c n
+(     * Function for obtaining all defined contexts) N
+(     * \\param res resulting contexts) N
+(     * \\param s should be an empty string) N
+(     * \\param depth of tree) N
+(     */) N
+(    ) p
+(void) k
+( getAllPatterns\( vector<string>& res, string s, ) p
+(const) K
+( ) p
+(int) k
+(& n \);) p n
+() N
+(    ) S
+(/**) c n
+(     * Check if the model is an M0 Markov model) N
+(     */) N
+(    bool isM0\(\) ) p
+(const) K
+(;) p n
+() N
+(    ) S
+(/**) c n
+(     * \\return vector of pointers to all termninal nodes) N
+(     */) N
+(    vector<Node*> getTerminalNodes\(\) ) p
+(const) K
+(;) p n
+() N
+(    ) N
+(    ) S
+(/**) c n
+(     * removes all nodes that are "scheduled") N
+(     */) N
+(    ) p
+(void) k
+( removeScheduled\( Node* pNode \);) p n
+(    ) N
+(    ) S
+(/**) c n
+(     * remove all terminal nodes) N
+(     */) N
+(    ) p
+(void) k
+( removeTerminalNodes\(\);) p n
+(    ) S
+(void) k
+( removeTerminalNodes\( Node* \);) p n
+() N
+() N
+(    ) S
+(/**) c n
+(     * \\return The maximum depth of tree) N
+(     */) N
+(    ) p
+(int) k
+( getMaxWordLength\(\) ) p
+(const) K
+( { ) p
+(return) K
+( maxWordLength_; }) p n
+() N
+() N
+(  protected:) N
+(    ) S
+(/**) c n
+(     * inserts a word into the tree) N
+(     * \\param w string) N
+(     * \\see insert\( const string& \)) N
+(     */) N
+(    ) p
+(void) k
+( insertWord\( ) p
+(const) K
+( string& w \);) p
+(//, const bool& = true \);) c n
+(    ) p n
+(Tree.h) (Sidan 6/8) (13 sep 06 13:58) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.h) (5/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (7-8) 6
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    ) p
+(/**) c n
+(     * \\see insertWord\( const string& \)) N
+(     */) N
+(    ) p
+(void) k
+( insertWord\( Node*, ) p
+(const) K
+( string&, string& \);) p
+(//, int  \);//, const bool& ) c n
+(= true \);) N
+() p n
+(    ) S
+(/**) c n
+(     * \\see depth\(\)) N
+(     */) N
+(    ) p
+(void) k
+( depth\( Node*, ) p
+(int) k
+(, ) p
+(int) k
+(& \);) p n
+() N
+(    ) S
+(/**) c n
+(     * Function evaluating the number of Tokens in string-tokenizer) N
+(     */) N
+(    ) p
+(void) k
+( checkNumberTokens\( StringTokenizer&, ) p
+(const) K
+( ) p
+(int) k
+(&, ) p
+(const) K
+( string&, ) p
+(const) K
+( ) p
+(i) k n
+(nt) S
+(& \);) p n
+(   ) N
+(    ) S
+(/**) c n
+(     * Function adjusting the probabilities in tree to non-cumulative once) N
+(     * needed for calculating AIC of a model) N
+(     */) N
+(    ) p
+(void) k
+( adjustNextSymbolCount\( Node* \);) p n
+() N
+(    ) S
+(/**) c n
+(     * Auxiliary function) N
+(     * \\see vector<Node*> getTerminalNodes\(\) const) N
+(     */) N
+(    ) p
+(void) k
+( getTerminalNodes\( Node*, vector<Node*>& res \) ) p
+(const) K
+(;) p n
+(    ) N
+() N
+() N
+() N
+(    ) S
+(/**) c n
+(     * Should be called by children of Tree after inserting the full sequence) N
+(     * It will remove all branches that have zero count. These can arise) N
+(     * from when inserting the last part of the seq. For example, AAAAAAT will ) N
+(     * result in the words AT, AAT, AAAT, AAAAT ... which will have no) N
+(     * defined nextSymbolProbabilities.) N
+(     */) N
+(    ) p
+(void) k
+( removeZeroes\(\);) p n
+(    ) N
+(    ) S
+(/**) c n
+(     * Used by removeZeroes in a recursive manner.) N
+(     */) N
+(    ) p
+(void) k
+( removeZeroes\( Node* \);) p n
+(  ) N
+(    ) S
+(/**) c n
+(     * modified\(\): Should be called whenever tree topology changes ) N
+(     */) N
+(    ) p
+(void) k
+( modified\(\) { DEPTH = -1; } ) p n
+() N
+(    ) S
+(/**) c n
+(     * \\return true if tree has been modified) N
+(     */) N
+(    bool isModified\(\) { ) p
+(return) K
+( DEPTH == -1; }) p n
+(    ) N
+() N
+(  protected: ) S
+(// instance variables) c n
+(    Node* head_;) p n
+(    TreeModifier* treeMod_;) N
+(    ) S
+(unsigned) k
+( ) p
+(int) k
+( total_;) p n
+(    bool firstCall_;) N
+(Tree.h) (Sidan 7/8) (13 sep 06 13:58) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    bool hasRemovedNodes_; ) p
+(/**< Added for handling terminal nodes */) c n
+(    ) p
+(double) k
+( totalTotal_;) p n
+(    ) S
+(int) k
+( maxWordLength_;) p n
+(    string name_;) N
+(    bool useAdj_;) N
+(    vector<Node*> terminalNodes_;) N
+(  };) N
+(};) N
+(#endif) K n
+(Tree.h) (Sidan 8/8) (13 sep 06 13:58) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.h) (6/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1-2) 7
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(// Copyright \(C\) 2005 Daniel Dalevi) c n
+(// Distributed under the GNU GENERAL PUBLIC LICENSE version 2) N
+() p n
+(#include) K
+( <iostream>) p n
+(#include) K
+( <fstream>) p n
+(#include) K
+( <cmath>) p n
+(#include) K
+( <string>) p n
+() N
+(#include) K
+( <Util.h>) p n
+(#include) K
+( <Exception.h>) p n
+(#include) K
+( <RandomSingleton.h>) p n
+() N
+(#include) K
+( ") p
+(Tree.h) str
+(") p n
+(#include) K
+( ") p
+(FixedTree.h) str
+(") p n
+(#include) K
+( ") p
+(PstTree.h) str
+(") p n
+(#include) K
+( ") p
+(Node.h) str
+(") p n
+(#include) K
+( ") p
+(PSModifier.h) str
+(") p n
+(#include) K
+( ") p
+(KLModifier.h) str
+(") p n
+() N
+(using) K
+( ) p
+(namespace) K
+( std;) p n
+(using) K
+( ) p
+(namespace) K
+( trees;) p n
+() N
+(// Statics ) c n
+(int) k
+( Tree::DEPTH = -1;) p n
+(const) K
+( string Tree::BADALPHABET = ") p
+(The symbols of the model are not in accordance with the specified al) str n
+(phabet\\nPlease check the integrity of file or the settings. Bad symbol.) S
+(";) p n
+() N
+() N
+(Tree::Tree\(\)) N
+({) N
+(  ) S
+(// The total number of nodes should not belong to Node-class ) c n
+(  ) p
+(// but to Tree class. This to avoid confusion of the static ) c n
+(  ) p
+(// nature when having more trees. CHANGE THIS!!!) c n
+(  sReset\(\);) p n
+(}) N
+() N
+(/*) c n
+( * Constructors and destructors) N
+( */) N
+(Tree::Tree\( ) p
+(const) K
+( Alphabet* alp, ) p
+(const) K
+( ) p
+(int) k
+(& wl \)  ) p n
+({) N
+(  Node::setAlphabet\( alp \);) N
+(  head_ = ) S
+(new) K
+( Node\(\);) p n
+(  maxWordLength_ = wl;) N
+(  totalTotal_ = 0;) N
+(  treeMod_ = ) S
+(NULL) K
+(;) p n
+(}) N
+() N
+() N
+() N
+() N
+(Tree::~Tree\(\)) N
+({) N
+(  ) S
+(this) K
+(->cleanUp\( head_ \);  ) p n
+(  ) S
+(if) K
+(\( treeMod_ != ) p
+(NULL) K
+( \)) p n
+(    {) N
+(      ) S
+(delete) K
+( treeMod_;) p n
+(    }) N
+(  treeMod_ = ) S
+(NULL) K
+(;) p n
+(}) N
+() N
+(void) k
+( Tree::clear\(\)) p n
+(Tree.cpp) (Sidan 1/18) (14 sep 06 16:47) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+({) p n
+(  ) S
+(this) K
+(->cleanUp\( head_ \);) p n
+(  sReset\(\);) N
+(  head_ = ) S
+(new) K
+( Node\(\);) p n
+(  total_ = 0;) N
+(  totalTotal_ = 0;) N
+(  firstCall_ = ) S
+(true) k
+(;) p n
+(  name_ = "";) N
+(  DEPTH = 0;) N
+(}) N
+() N
+() N
+(void) k
+( Tree::sReset\(\)) p n
+({) N
+(  Node::sReset\(\);) N
+(}) N
+() N
+() N
+(void) k
+( Tree::addPseudoCounts\(\)) p n
+({) N
+(  addPseudoCounts\( head_ \);) N
+(}) N
+() N
+() N
+(void) k
+( Tree::addPseudoCounts\( Node* pNode \)) p n
+({) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \) ) p n
+(    {) N
+(      ) S
+(if) K
+(\( pNode->getNextSymbCount\( i \) == 0 \) ) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \) ) p n
+() S 8 T (    {) N
+() S 8 T (      pNode->setNextSymbolCount\( i, pNode->getNextSymbCount\( i \) + 1 \); ) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \) ) p n
+(    {) N
+(      Node* next = pNode->getNode\(i\);) N
+(      ) S
+(if) K
+(\( next != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  addPseudoCounts\( next \);) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+() N
+(int) k
+( Tree::depth\(\)) p n
+({) N
+(  ) S
+(if) K
+(\( !isModified\(\) \) ) p
+(return) K
+( DEPTH;) p n
+(  ) S
+(int) k
+( max = 0;) p n
+(  depth\( head_, 0, max \); ) N
+(  DEPTH = max;) N
+(  ) S
+(return) K
+( max;) p n
+(}) N
+() N
+() N
+(void) k
+( Tree::setTreeModifier\( TreeModifier* tm \)) p n
+( {) N
+(  ) S
+(if) K
+(\( treeMod_ != ) p
+(NULL) K
+( \)) p n
+(    {) N
+(      ) S
+(delete) K
+( treeMod_;) p n
+(Tree.cpp) (Sidan 2/18) (14 sep 06 16:47) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.cpp) (7/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3-4) 8
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    }) p n
+(   tm->setHead\( head_ \); ) N
+(   treeMod_ = tm; ) N
+(}) N
+() N
+() N
+(void) k
+( Tree::depth\( Node* pNode, ) p
+(int) k
+( d, ) p
+(int) k
+(& max \)) p n
+({) N
+(  ) S
+(if) K
+(\( d > max \) max = d;) p n
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      Node* next = pNode->getNode\( i \);) N
+(      ) S
+(if) K
+(\( next == ) p
+(NULL) K
+( \) ) p
+(continue) K
+(;) p n
+(      ) S
+(else) K n
+() p 8 T ({) N
+() S 8 T (  depth\( next, d+1, max \);) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+() N
+(double) k
+( Tree::getTotalTotal\(\)) p n
+({) N
+(  ) S
+(if) K
+(\( totalTotal_ > 0 \) ) p
+(return) K
+( totalTotal_;) p n
+(  ) S
+(double) k
+( res = 0;) p n
+(  ) S
+(this) K
+(->totalTotal\( head_, res \);) p n
+(  ) S
+(return) K
+( res;) p n
+(}) N
+() N
+(void) k
+( Tree::totalTotal\( Node* pNode, ) p
+(double) k
+(& res \)) p n
+({) N
+(  res += pNode->getTotalC\(\);) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      Node* next = pNode->getNode\(i\);) N
+(      ) S
+(if) K
+(\( next != ) p
+(NULL) K
+( \) ) p
+(this) K
+(->totalTotal\( next, res \);) p n
+(    }) N
+(}) N
+() N
+() N
+(void) k
+( Tree::removeZeroes\(\)) p n
+({) N
+(  ) S
+(if) K
+(\( head_->getTotalC\(\) == 0 \)) p n
+(    {) N
+(      cerr << ") S
+(Warning: Must run setNextSymbolProb\(\) before removeZeroes\(\)\\n) str
+(";) p n
+(      ) S
+(return) K
+(;) p n
+(    }) N
+(  removeZeroes\( head_ \);) N
+(}) N
+() N
+(void) k
+( Tree::removeZeroes\( Node* pNode \)) p n
+({) N
+(  ) S
+(if) K
+(\( pNode->getTotalC\(\) == 0 \)) p n
+(    {) N
+(      cleanUp\( pNode \);) N
+(    }) N
+(  ) S
+(else) K n
+(    {) p n
+(      ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+() S 8 T ({) N
+() S 8 T (  Node* next = pNode->getNode\(i\);) N
+() S 8 T (  ) S
+(if) K
+(\( next != ) p
+(NULL) K
+( \)) p n
+(Tree.cpp) (Sidan 3/18) (14 sep 06 16:47) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (    {) N
+() S 8 T (      ) S
+(if) K
+(\( next->getTotalC\(\) == 0 \)) p n
+() S 8 T () S 16 T ({) N
+() S 8 T () S 16 T (  cleanUp\( next \);) N
+() S 8 T () S 16 T (  pNode->setNode\( ) S
+(NULL) K
+(, i \);) p n
+() S 8 T () S 16 T (}) N
+() S 8 T (      ) S
+(else) K n
+() p 8 T () S 16 T ({) N
+() S 8 T () S 16 T (  removeZeroes\( next \);) N
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }  ) N
+(}) N
+() N
+() N
+(// void Tree::insertWord\( const string& word \)//, const bool& rev \)) c n
+(// {) N
+(//   modified\(\);) N
+(//   const char& curLetter = word[ 0 ];  ) N
+(//     //  cout << "increasing head counter: " << word[0] <<  endl;) N
+(//   if\( word.size\(\) == 1 \) {) N
+(//     head_->increaseP\( curLetter \);) N
+(//     //cout << curLetter << endl; head_->print\(\);) N
+(//   }) N
+(  ) p n
+() N
+(//   Node* curNode = head_->getNode\( curLetter \);) c n
+(//   if\( curNode == NULL \)) N
+(//     {) N
+(//       curNode = new Node\( word.substr\( 0, 1 \) \);) N
+(//       head_->setNode\( curNode, curLetter \);) N
+(//     }) N
+(//   this->insertWord\( curNode, word, 1 \);//, rev \); ) N
+(// }) N
+() p n
+() N
+(void) k
+( Tree::insertWord\( ) p
+(const) K
+( string& word \)) p
+(//, const bool& rev \)) c n
+({) p n
+(  modified\(\);) N
+(  string s = "";) N
+(  insertWord\( head_, word, s \);) N
+(  ) S
+(//  cout << "TESTING: " << word << " " << s << endl;) c n
+(}) p n
+() N
+() N
+(void) k
+( Tree::insertWord\( Node* pNode, ) p
+(const) K
+( string& word, string& s \)) p n
+({) N
+(  ) S
+(const) K
+( ) p
+(char) k
+(& curLetter = word[ 0 ];) p n
+(  pNode->increaseP\( curLetter \);) N
+(  s = word[0] + s;) N
+() N
+(  Node* curNode = pNode->getNode\( curLetter \);) N
+(  ) S
+(if) K
+(\( curNode == ) p
+(NULL) K
+( \)) p n
+(    {) N
+(      curNode = ) S
+(new) K
+( Node\( s \);) p n
+(      pNode->setNode\( curNode, curLetter \);) N
+(    }) N
+(  ) S
+(if) K
+(\( word.size\(\) == 1 \) ) p n
+(    {) N
+(      ) S
+(return) K
+(; ) p n
+(    }) N
+(Tree.cpp) (Sidan 4/18) (14 sep 06 16:47) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.cpp) (8/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5-6) 9
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(  ) p
+(else) K n
+(    {) p n
+(      ) S
+(this) K
+(->insertWord\( curNode, word.substr\( 1, word.size\(\) - 1 \), s \);) p n
+(    }) N
+(}) N
+() N
+() N
+(// void Tree::insertWord\( Node* pNode, const string& word, int deep \)//, const b) c n
+(ool& rev \)) N
+(// {   ) N
+(//   if\( word.size\(\) == deep \) ) N
+(//     {) N
+(//       return; ) N
+(//     }) N
+(  ) p n
+(//   const char& curLetter = word[ deep ];) c n
+() p n
+(//   if\( word.size\(\) == deep+1 \) ) c n
+(//     {      ) N
+(//       pNode->increaseP\( curLetter \);) N
+(//       if\( dynamic_cast<FixedTree*>\( this \) != NULL \)) N
+(// ) S 8 T ({) N
+(// ) S 8 T (  return;) N
+(// ) S 8 T (}) N
+(//     }) N
+(//   Node* curNode = pNode->getNode\( curLetter \);) N
+(//   if\( curNode == NULL \)) N
+(//     {) N
+(//       string tmp = word.substr\( 0, deep + 1 \);) N
+(//       reverse\( tmp.begin\(\), tmp.end\(\) \);) N
+(//       curNode = new Node\( tmp \);) N
+(//       pNode->setNode\( curNode, curLetter \);) N
+(//     }) N
+(//    else) N
+(//      {) N
+(//      }) N
+(//   this->insertWord\( curNode, word, ++deep \);//, rev \); ) N
+(// }) N
+() p n
+() N
+(/*) c n
+( * Protected functions \(A-Z\)) N
+( */) N
+(void) k
+( Tree::cleanUp\( Node* pNode \)) p n
+({) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(     ) S
+(if) K
+(\( pNode->getNode\( i \) != ) p
+(NULL) K
+( \)) p n
+(       {) N
+() S 8 T (cleanUp\( pNode->getNode\( i \) \);) N
+(       }) N
+(    }) N
+(  ) S
+(delete) K
+( pNode; ) p
+(// No more nodes further down!) c n
+(}) p n
+() N
+() N
+() N
+() N
+() N
+(double) k
+( Tree::getSuffixCount\( ) p
+(const) K
+( string& pat \) ) p
+(const) K n
+({) p n
+(  ) S
+(//  cout << "PAT = " << pat << endl;) c n
+(Tree.cpp) (Sidan 5/18) (14 sep 06 16:47) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(  ) p
+(if) K
+(\( pat.size\(\) <= 1 \) ) p n
+(    { ) N
+(      ) S
+(double) k
+( sum = 0;) p n
+(      ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \) sum += head_->getC\( i \)) p n
+(; ) N
+(      ) S
+(return) K
+( sum;) p n
+(    }) N
+(  ) S
+(// Skip first nucleotide and get all that ends in pat) c n
+(  ) p
+(double) k
+( totalCount = 0;) p n
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      Node* pNode = head_->getNode\( i \);) N
+(      ) S
+(if) K
+(\( pNode == ) p
+(NULL) K
+( \) ) p
+(continue) K
+(;) p n
+() N
+(      string::const_reverse_iterator i_pat = pat.rbegin\(\);) N
+(      ++i_pat; ) S
+(// Skip first nuc since does not belong to prefix) c n
+(      ) p n
+(      Node* node = pNode;) N
+(      string tmp_pat = node->getString\(\);) N
+() N
+(      ) S
+(for) K
+(\( ; i_pat+1  != pat.rend\(\); ++i_pat \)) p n
+() S 8 T ({) N
+() S 8 T (  node = node ->getNode\( *i_pat \);) N
+() S 8 T (  tmp_pat += *i_pat;) N
+() S 8 T (  ) S
+(if) K
+(\( node == ) p
+(NULL) K
+( \) ) p
+(break) K
+(;) p n
+() S 8 T (}) N
+(      ) S
+(if) K
+(\( node != ) p
+(NULL) K
+( \) ) p n
+() S 8 T ({) N
+() S 8 T (  totalCount += node->getC\( *i_pat, ) S
+(true) k
+( \);) p n
+() S 8 T (  ) S
+(//) c 16 T (  cout << tmp_pat + *i_pat << " " <<  node->getC\( *i_pat, true \)) N
+( << endl;) N
+() p 8 T (}) N
+(    }) N
+(  ) S
+(//  cout << "Total count = " << totalCount << endl;) c n
+(  ) p
+(return) K
+( totalCount;) p n
+( }) N
+() N
+() N
+(double) k
+( Tree::getCount\( ) p
+(const) K
+( string& pat \) ) p
+(const) K n
+({) p n
+(  ) S
+(if) K
+(\( pat.size\(\) == 0 \) { ) p
+(return) K
+( head_->getTotalC\(\); }) p n
+(  ) S
+(if) K
+(\( pat.size\(\) == 1 \) ) p n
+(    {) N
+(      ) S
+(return) K
+( head_->getC\( pat[0], ) p
+(true) k
+( \); ) p n
+(    }) N
+() N
+() N
+(  string::const_reverse_iterator i_pat = pat.rbegin\(\);) N
+(  Node* node = head_;) N
+(  ) S
+(for) K
+(\( ; i_pat + 1  != pat.rend\(\); ++i_pat \)) p n
+(    {) N
+(      node = node->getNode\( *i_pat \);) N
+(      ) S
+(if) K
+(\( node == ) p
+(NULL) K
+( \) ) p
+(break) K
+(;) p n
+(    }) N
+(  ) S
+(if) K
+(\( node != ) p
+(NULL) K
+( \) ) p n
+(    {) N
+(      ) S
+(return) K
+( node->getC\( *i_pat, ) p
+(true) k
+( \);) p n
+(    }) N
+(  ) S
+(else) K
+( ) p
+(return) K
+( 0.0;) p n
+( }) N
+() N
+() N
+(Tree.cpp) (Sidan 6/18) (14 sep 06 16:47) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.cpp) (9/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (7-8) 10
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(void) k
+( Tree::setProbabilities\(\) ) p n
+({) N
+(  setProbabilities\( head_ \);) N
+(}) N
+() N
+(void) k
+( Tree::setProbabilities\( Node* pNode \) ) p n
+({) N
+(  string s = pNode->getString\(\);) N
+(  ) S
+(if) K
+(\( s == ") p
+(#) str
+(" \) s = "";) p n
+(  ) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      string s_pat = s + Node::getAlphabetChar\( i \);) N
+(      ) S
+(double) k
+( s_nom = getSuffixCount\( s_pat \);      ) p n
+(      ) S
+(double) k
+( s_denom = getCount\( s_pat \);) p n
+(      ) N
+(      ) S
+(if) K
+(\( s_nom != 0 \) ) p n
+(      ) S 8 T ({) N
+() S 8 T (  pNode->setNextSymbolProb\( i, s_denom / s_nom \);) N
+() S 8 T (  pNode->setNextSymbolCount\( i, s_denom \);) N
+() S 8 T (}) N
+(    }) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      ) S
+(if) K
+(\( pNode->getNode\( i \) != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(this) K
+(->setProbabilities\( pNode->getNode\( i \) \);) p n
+() S 8 T (}) N
+(    }  ) N
+(}) N
+() N
+() N
+(void) k
+( Tree::adjustNextSymbolCount\( Node* pNode \)) p n
+({) N
+(  ) S
+(if) K
+(\( pNode->isAdjusted\(\) \) ) p
+(return) K
+(;) p n
+(  ) S
+(bool) k
+( isAdjusted = ) p
+(false) k
+(;) p n
+(  ) S
+(bool) k
+( adj = ) p
+(true) k
+(;) p n
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      Node* node = pNode->getNode\( i \); ) N
+(      ) S
+(if) K
+(\( node != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(double) k
+( count = 0;) p n
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( j = 0; j < Node::getAlphabetSize\(\); ++j \)) p n
+() S 8 T (    {) N
+() S 8 T (      ) S
+(double) k
+( p = pNode->getNextSymbCount\( j \) - node->getNextSymbCount\( ) p n
+(j \);) N
+() S 8 T (      count += p;) N
+() S 8 T (      pNode->setNextSymbolCount\( j, p \);) N
+() S 8 T (    }) N
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( j = 0; j < Node::getAlphabetSize\(\); ++j \)) p n
+() S 8 T (    {) N
+() S 8 T (      pNode->setNextSymbolProb\( j, pNode->getNextSymbCount\( j \) / count ) N
+(\);) N
+() S 8 T (    }) N
+() S 8 T (  ) S
+(//) c 16 T (  pNode->setTotal\( count \);) N
+() p 8 T (}) N
+(    }) N
+(  ) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      Node* node = pNode->getNode\( i \); ) N
+(Tree.cpp) (Sidan 7/18) (14 sep 06 16:47) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(      ) p
+(if) K
+(\( node != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(this) K
+(->adjustNextSymbolCount\( node \);) p n
+() S 8 T (}) N
+(    }) N
+(//   for\( int i = 0; i < Node::getAlphabetSize\(\); ++i \)) c n
+(//     {) N
+(//       head_->setNextSymbolCount\( i, 0 \);) N
+(//     }) N
+(}) p n
+() N
+() N
+(void) k
+( Tree::print\(\) ) p
+(const) K
+( ) p n
+({) N
+(  ) S
+(if) K
+(\( head_ != ) p
+(NULL) K
+( \) print\( head_ \);) p n
+(}) N
+() N
+() N
+(bool) k
+( Tree::isM0\(\) ) p
+(const) K n
+({) p n
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      ) S
+(if) K
+(\( head_->getNode\( i \) != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(if) K
+(\( head_->getNode\( i \)->getTotalC\(\) > 0 \)) p n
+() S 8 T (    {) N
+() S 8 T (      ) S
+(return) K
+( ) p
+(false) k
+(;) p n
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }  ) N
+(  ) S
+(return) K
+( ) p
+(true) k
+(;) p n
+(}) N
+() N
+(double) k
+( Tree::prob\( ) p
+(const) K
+( string& pat \)) p n
+({) N
+(  ) S
+(if) K
+(\( !Node::integrity\( pat \) \) ) p
+(return) K
+( 0;) p n
+(  Node* pNode = head_;) N
+(  string::const_reverse_iterator irev = pat.rbegin\(\);) N
+(  ) S
+(char) k
+( lastSymbol = *irev;) p n
+(  ++irev;) N
+(  ) S
+(for) K
+(\( ; irev != pat.rend\(\); ++irev \)) p n
+(    {) N
+(      Node* next = pNode->getNode\( *irev \);) N
+(      ) S
+(if) K
+(\( next == ) p
+(NULL) K
+( \) ) p
+(break) K
+(;) p n
+(      pNode = next;) N
+(    }) N
+(  ) S
+(return) K
+( pNode->getNextSymbProb\( lastSymbol, ) p
+(true) k
+( \);) p n
+(}) N
+() N
+() N
+(void) k
+( Tree::removeTerminalNodes\(\)) p n
+({) N
+(  removeTerminalNodes\( head_ \);) N
+(}) N
+() N
+(void) k
+( Tree::removeTerminalNodes\( Node* pNode \)) p n
+({) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      ) S
+(if) K
+(\( pNode->getNode\( i \) != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(if) K
+(\( pNode->getNode\( i \)->isLeaf\(\) \)) p n
+(Tree.cpp) (Sidan 8/18) (14 sep 06 16:47) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.cpp) (10/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (9-10) 11
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (    {) N
+() S 8 T (      cleanUp\( pNode->getNode\( i \) \);) N
+() S 8 T (      pNode->setNode\( ) S
+(NULL) K
+(, i \);) p n
+() S 8 T (    }) N
+() S 8 T (  ) S
+(else) K n
+() p 8 T (    {) N
+() S 8 T (      removeTerminalNodes\( pNode->getNode\( i \) \);) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+() N
+() N
+(void) k
+( Tree::prune\( ) p
+(const) K
+( ) p
+(double) k
+(& cutoff \) ) p n
+({) N
+(  DEPTH = -1; ) S
+(// Tree modified) c n
+() p n
+(  ) S
+(// Call tree-modifier) c n
+(  ) p
+(if) K
+(\( treeMod_ != ) p
+(NULL) K
+( \)) p n
+(    {) N
+(      ) S
+(this) K
+(->setHeadForTM\( treeMod_ \); ) p
+(// This line was added to fix an error, KE) c n
+(EP) N
+(      treeMod_->prune\( cutoff \);) p n
+(    }) N
+() N
+(  ) S
+(// Counts must be adjusted) c n
+(  ) p
+(if) K
+(\( useAdj_ \) adjustNextSymbolCount\( head_ \);) p n
+(  ) S
+(//setProbabilities\(\);) c n
+(}) p n
+() N
+() N
+(void) k
+( Tree::prune\( ) p
+(const) K
+( ) p
+(int) k
+(& num \)) p n
+({) N
+(  DEPTH = -1; ) S
+(// Tree modified) c n
+() p n
+(  ) S
+(// Call tree-modifier) c n
+(  ) p
+(if) K
+(\( treeMod_ != ) p
+(NULL) K
+( \)) p n
+(    {) N
+(      ) S
+(this) K
+(->setHeadForTM\( treeMod_ \); ) p
+(// This line was added to fix an error, KE) c n
+(EP) N
+(      treeMod_->prune\( num \);) p n
+(    }) N
+() N
+(  ) S
+(// Counts must be adjusted) c n
+(  ) p
+(if) K
+(\( useAdj_ \) adjustNextSymbolCount\( head_ \);) p n
+(}) N
+() N
+() N
+(void) k
+( Tree::adjustNextSymbolCount\(\)) p n
+({) N
+(  useAdj_ = ) S
+(true) k
+(;) p n
+(  adjustNextSymbolCount\( head_ \);) N
+(}) N
+() N
+() N
+(void) k
+( Tree::print\( Node* pNode \) ) p
+(const) K
+( ) p n
+({) N
+(  pNode->print\(\);) N
+() N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(Tree.cpp) (Sidan 9/18) (14 sep 06 16:47) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(      ) p
+(if) K
+(\( pNode->getNode\( i \) != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(this) K
+(->print\( pNode->getNode\( i \) \);) p n
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+() N
+(void) k
+( Tree::load\( ) p
+(const) K
+( string& filename \)) p n
+({) N
+(  modified\(\);) N
+(  ifstream fin\( filename.c_str\(\) \);) N
+(  ) S
+(if) K
+(\( !fin \)) p n
+(    {) N
+(      ) S
+(throw) K
+( common::Exception\( ") p
+(Cannot open file: ) str
+(" + filename, common::Exception::WAR) p n
+(NING \);) N
+(    }) N
+(  ) S
+(char) k
+( buffer[1000];) p n
+() N
+(  vector<Node*> nodeList;) N
+(  vector<) S
+(int) k
+(> relations;) p n
+() N
+() N
+(  ) S
+(int) k
+( lineNumber = 0;) p n
+(  ) S
+(while) K
+(\( fin.getline\( buffer, 1000 \) \)) p n
+(    {) N
+(      ++lineNumber;) N
+(      string line = buffer;) N
+(      StringTokenizer sTok\( line, ") S
+( ) str
+(" \);) p n
+(      string col = sTok.nextToken\(\);) N
+(      ) S
+(if) K
+(\( lineNumber == 1 \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(if) K
+(\( col != ") p
+(Name:) str
+(" \)) p n
+() S 8 T (    {) N
+() S 8 T (      ) S
+(throw) K
+( common::Exception\( ") p
+(Does not look like a tree-file: ) str
+(" + filename) p n
+() S 8 T () S 16 T () S 24 T () S 32 T ( + ") S
+(, first tag should be Name: ) str
+(", common::Exception::ERR) p n
+(OR \);) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(      ) S
+(if) K
+(\( col == ") p
+(Name:) str
+(" || col == ") p
+(Date:) str
+(" \) ) p
+(continue) K
+(; ) p n
+(      ) S
+(if) K
+(\( col == ") p
+(Alphabet:) str
+(" \) ) p
+(// NOT NECESSARY SINCE DEFINE IN CONSTRUCTOR) c n
+( ) p 8 T ({) N
+() S 8 T (  ) S
+(this) K
+(->checkNumberTokens\( sTok, 1, col, lineNumber \);) p n
+() S 8 T (  ) S
+(continue) K
+(;) p n
+() S 8 T (  ) S
+(// ) c 16 T (  Alphabet* pA = new Alphabet\(\);) N
+() p 8 T (  ) S
+(// ) c 16 T (  pA->setAlphabet\( sTok.nextToken\(\) \);) N
+() p 8 T (  ) S
+(// ) c 16 T (  Node::setAlphabet\( pA \);) N
+( ) p 8 T (}) N
+(      ) S
+(if) K
+(\( col == ") p
+(Tree:) str
+(" \) ) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(this) K
+(->checkNumberTokens\( sTok, 1, col, lineNumber \);) p n
+() S 8 T (  ) S
+(continue) K
+(;) p n
+() S 8 T (}) N
+(       ) S
+(if) K
+(\( col == ") p
+(Number\(nodes\):) str
+(" \)) p n
+() S 8 T ( {) N
+() S 8 T (   ) S
+(this) K
+(->checkNumberTokens\( sTok, 1, col, lineNumber \);) p n
+() S 8 T (   Node::setNumberNodes\( 0 \);) S
+(//sTok.nextIntToken\(\) \);) c n
+() p 8 T (   ) S
+(continue) K
+(;) p n
+() S 8 T ( }) N
+(       ) S
+(if) K
+(\( col == ") p
+(Number\(parameters\):) str
+(" \)) p n
+() S 8 T ( {) N
+() S 8 T (   ) S
+(this) K
+(->checkNumberTokens\( sTok, 1, col, lineNumber \);) p n
+(Tree.cpp) (Sidan 10/18) (14 sep 06 16:47) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.cpp) (11/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (11-12) 12
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (   ) S
+(int) k
+( np = sTok.nextIntToken\(\);) p n
+() S 8 T (   Node::setNumberParameters\( 0 \);) N
+() S 8 T (   ) S
+(continue) K
+(;) p n
+() S 8 T ( }) N
+(       ) S
+(if) K
+(\( col == ") p
+(Node:) str
+(" \) ) p n
+() S 8 T ( {) N
+() S 8 T (   ) S
+(int) k
+( n = Node::getAlphabetSize\(\);) p n
+() S 8 T (   ) S 16 T (  ) N
+() S 8 T (   ) S
+(int) k
+( numberOfTokens = 3*n + 8;) p n
+() S 8 T (   ) S
+(this) K
+(->checkNumberTokens\( sTok, numberOfTokens, col, lineNumber \);) p n
+() S 8 T (   ) N
+() S 8 T (   ) S
+(// Read identity of node) c n
+() p 8 T (   ) S
+(int) k
+( id = sTok.nextIntToken\(\);) p n
+() S 8 T (   ) N
+() S 8 T (   ) S
+(// Read nuc-pattern of node) c n
+() p 8 T (   string s = sTok.nextToken\(\);) N
+() N
+() S 8 T (   ) S
+(// [) c n
+() p 8 T (   sTok.nextToken\(\);) N
+() N
+() S 8 T (   ) S
+(// Read counts of node-children) c n
+() p 8 T (   vector<) S
+(double) k
+(> counts;) p n
+() S 8 T (   ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < n; ++i \)) p n
+() S 8 T (     {) N
+() S 8 T (       ) S
+(double) k
+( c = sTok.nextFloatToken\(\);) p n
+() S 8 T (       counts.push_back\( c \);) N
+() S 8 T (     }) N
+() N
+() S 8 T (   ) S
+(// ]) c n
+() p 8 T (   sTok.nextToken\(\);) N
+() N
+() S 8 T (   ) S
+(// Read total counts of node-children) c n
+() p 8 T (   ) S
+(double) k
+( total = sTok.nextFloatToken\(\);) p n
+() S 8 T (   ) N
+() S 8 T (   ) S
+(// [) c n
+() p 8 T (   sTok.nextToken\(\);) N
+() N
+() S 8 T (   ) S
+(// Read nextSymbolCount) c n
+() p 8 T (   vector<) S
+(double) k
+(> nextS;) p n
+() S 8 T (   ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < n; ++i \)) p n
+() S 8 T (     {) N
+() S 8 T (       ) S
+(double) k
+( c = sTok.nextFloatToken\(\);) p n
+() S 8 T (       ) S
+(//cout << c << " ";) c n
+() p 8 T (       nextS.push_back\( c \);) N
+() S 8 T (     }) N
+() S 8 T (   ) N
+() S 8 T (   ) S
+(// ][) c n
+() p 8 T (   sTok.nextToken\(\);) N
+() N
+() S 8 T (   ) N
+() S 8 T (   ) S
+(// Save relations for building tree) c n
+() p 8 T (   ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < n; ++i \)) p n
+() S 8 T (     {) N
+() S 8 T (       ) S
+(int) k
+( c = sTok.nextIntToken\(\);) p n
+() S 8 T (       relations.push_back\( c \);) N
+() S 8 T (     }) N
+() S 8 T (  ) N
+() S 8 T (   ) S
+(// ]) c n
+() p 8 T (   sTok.nextToken\(\);) N
+() N
+( ) N
+() S 8 T (   ) S
+(// Create new node and save for building tree) c n
+(Tree.cpp) (Sidan 11/18) (14 sep 06 16:47) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (   Node* node = ) S
+(new) K
+( Node\( s \);) p n
+() S 8 T (   node->setId\( id \);) N
+() S 8 T (   node->setCounts\( counts \);) N
+() S 8 T (   node->setNextSymbolCount\( nextS \);) N
+() S 8 T (   ) S
+(//node->setTotal\( total \);) c n
+() p 8 T (   node->calculateProbabilities\(\);) N
+() S 8 T (   nodeList.push_back\( node \);) N
+() S 8 T ( }) N
+(    }) N
+() N
+(  ) S
+(// Build tree) c n
+(  head_ = nodeList[0];) p n
+(  ) S
+(int) k
+( relIndex = 0;) p n
+(  ) S
+(if) K
+(\( *max_element\( relations.begin\(\), relations.end\(\) \) > 0 && nodeList.size\(\)-) p n
+(1 != *max_element\( relations.begin\(\), relations.end\(\) \) \) ) N
+(    {) N
+(      cerr << ") S
+(\\nError in: ) str
+(" << filename << endl << endl) p n
+() S 8 T (   << ") S
+(There seem to be connections to nodes that does not exist, or\\n) str
+(") p n
+() S 8 T (   << ") S
+(nodes without connections. In either case you need to check the\\n) str
+(") p n
+() S 8 T (   << ") S
+(integrity of the inputfile. The last columns in the square brackets\\n) str
+(") p n
+() S 8 T (   << ") S
+(should be assigned -1 if not connected to any nodes!\\n\\n) str
+(") p n
+() S 8 T (   << ") S
+(Beyond repair! Terminates ...\\n\\n) str
+(";) p n
+(      exit\( 1 \);) N
+(    }) N
+(  ) S
+(if) K
+(\( Node::getNumberNodes\(\) != nodeList.size\(\) \)) p n
+(    {) N
+(      cerr << ") S
+(\\nError in: ) str
+(" << filename << endl << endl     ) p n
+() S 8 T (   << ") S
+(There are differently many nodes specified: ) str
+("<< Node::getNumberNodes\(\)<< endl) p n
+() S 8 T (   << ") S
+(Those listed count to: ) str
+(" << nodeList.size\(\) << ") p
+(\\n\\n) str
+(") p n
+() S 8 T (   << ") S
+(Beyond repair! Terminates ...\\n\\n) str
+(";) p n
+(    }) N
+() N
+(  ) S
+(for) K
+(\( vector<Node*>::iterator inode = nodeList.begin\(\); inode != nodeList.end\(\)) p n
+(; ++inode \)) N
+(    {) N
+(      ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(int) k
+( id = relations[ relIndex++ ];) p n
+() S 8 T (  ) S
+(if) K
+(\( id != -1 \)) p n
+() S 8 T (    {) N
+() S 8 T (      ) S
+(for) K
+(\( vector<Node*>::iterator jnode = nodeList.begin\(\); jnode != no) p n
+(deList.end\(\); ++jnode \)) N
+() S 8 T () S 16 T ({) N
+() S 8 T () S 16 T (  ) S
+(if) K
+(\( id == \(*jnode\)->getId\(\) \)) p n
+() S 8 T () S 16 T (    {) N
+() S 8 T () S 16 T (      \(*inode\)->setNode\( \(*jnode\), i \);) N
+() S 8 T () S 16 T (      ) S
+(break) K
+(;) p n
+() S 8 T () S 16 T (    }) N
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(      \(*inode\)->checkIfLeaf\(\);) N
+(    }) N
+(}) N
+() N
+() N
+(void) k
+( Tree::checkNumberTokens\( StringTokenizer& str, ) p
+(const) K
+( ) p
+(int) k
+(& n,) p n
+() S 8 T () S 16 T () S 24 T (      ) S
+(const) K
+( string& tag, ) p
+(const) K
+( ) p
+(int) k
+(& ln \)) p n
+({) N
+(  ) S
+(if) K
+(\( n != str.countTokens\(\) \) ) p n
+(    {) N
+(      cerr << ") S
+(The input-file seems corrupt for the ) str
+(" << Node::getAlphabetName\(\) << ") p
+( alphabet, l) str n
+(Tree.cpp) (Sidan 12/18) (14 sep 06 16:47) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.cpp) (12/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (13-14) 13
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(ine: ) str
+(" << ln << endl << tag << ") p
+( ) str
+(";) p n
+(      cerr << ") S
+(Line has ) str
+(" << str.countTokens\(\)+1 << ") p
+( space separated words, should have: ) str
+(" <<) p n
+( n + 1 << endl;) N
+(      ) S
+(while) K
+(\( str.hasMoreTokens\(\) \)cout << str.nextToken\(\) << ") p
+( ) str
+(";) p n
+(      cout << endl;) N
+(      exit\( 2 \); ) S
+(// THROW EXCEPTION!!) c n
+(    }) p n
+(}) N
+() N
+(void) k
+( Tree::save\( ) p
+(const) K
+( string& filename \)) p n
+({) N
+(  ) S
+(// Open file) c n
+(  ofstream fout\( filename.c_str\(\) \);) p n
+(  ) S
+(if) K
+(\( !fout \)) p n
+(    {) N
+(      ) S
+(throw) K
+( common::Exception\( ") p
+(cannot open file: ) str
+(" + filename, common::Exception::ERR) p n
+(OR \);) N
+(    }) N
+() N
+(  ) S
+(int) k
+( nodeCounter = 0;) p n
+(  fout << ") S
+(Name: ) str
+(" << name_ << endl;) p n
+(  fout << ") S
+(Date: ) str
+(" << Util::TimeAndDate2String\(\) << endl;) p n
+(  ) S
+(if) K
+(\( ) p
+(dynamic_cast) k
+(<FixedTree*>\( ) p
+(this) K
+( \) != ) p
+(NULL) K
+( \) fout << ") p
+(Tree: Fixed) str
+(" << endl;) p n
+(  ) S
+(if) K
+(\( ) p
+(dynamic_cast) k
+(<PstTree*>\( ) p
+(this) K
+( \) != ) p
+(NULL) K
+( \) fout << ") p
+(Tree: PST) str
+(" << endl;) p n
+(  fout << ") S
+(Alphabet: ) str
+(" << Node::getAlphabetName\(\) << endl;) p n
+(  fout << ") S
+(Number\(nodes\): ) str
+(" << Node::getNumberNodes\(\) << endl;) p n
+(  fout << ") S
+(Number\(parameters\): ) str
+(" << Node::getNumberParameters\(\) << endl;) p n
+() N
+(  ) S
+(int) k
+( nodeId = 0;) p n
+(  setNodeId\( head_, nodeId \);) N
+(  save\( head_, fout \);) N
+(}) N
+() N
+() N
+(void) k
+( Tree::save\( Node* pNode, ofstream& fout \)) p n
+({) N
+(  ) S
+(if) K
+(\( pNode->getId\(\) != 0 \)) p n
+(    {) N
+(      fout << ") S
+(Node: ) str
+(" << pNode->getId\(\) << ") p
+( ) str
+(" << pNode->getString\(\) << ") p
+( ) str
+(" << pN) p n
+(ode->toString\(\);) N
+(    }) N
+(  ) S
+(else) K n
+(    {) p n
+(      fout << ") S
+(Node: ) str
+(" << pNode->getId\(\) << ") p
+( # ) str
+(" << pNode->toString\(\);) p n
+(    }) N
+(  fout << ") S
+([ ) str
+(";) p n
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      ) S
+(if) K
+(\( pNode->getNode\( i \) != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  fout << pNode->getNode\( i \)->getId\(\) << ") S
+( ) str
+(";) p n
+() S 8 T (}) N
+(      ) S
+(else) K n
+() p 8 T ({) N
+() S 8 T (  fout << -1 << ") S
+( ) str
+(";) p n
+() S 8 T (}) N
+(    }) N
+(  fout << ") S
+( ]) str
+(" << endl;) p n
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      ) S
+(if) K
+(\( pNode->getNode\( i \) != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+(Tree.cpp) (Sidan 13/18) (14 sep 06 16:47) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (  ) S
+(this) K
+(->save\( pNode->getNode\( i \), fout \);) p n
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+() N
+(void) k
+( Tree::setNodeId\( Node* pNode, ) p
+(int) k
+(& nodeId \)) p n
+({) N
+(  pNode->setId\( nodeId++ \);) N
+(  ) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      ) S
+(if) K
+(\( pNode->getNode\( i \) != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  setNodeId\( pNode->getNode\( i \), nodeId \);) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+() N
+(string Tree::getRandomSequence\( ) S
+(const) K
+( ) p
+(int) k
+(& l, ) p
+(const) K
+( ) p
+(int) k
+(& seed \)) p n
+({) N
+(  ) N
+(  string res = ""; ) N
+(  RandomSingleton* pRand = RandomSingleton::instance\(\);) N
+(  ) S
+(if) K
+(\( firstCall_ \)) p n
+(    {) N
+(      ) S
+(if) K
+(\( seed == 0 \)) p n
+() S 8 T ({) N
+() S 8 T (  pRand->randomize\(\);) N
+() S 8 T (}) N
+(      ) S
+(else) K
+( ) p
+(if) K
+(\( seed > 0 \) ) p n
+() S 8 T ({) N
+() S 8 T (  pRand->randomize\( seed \);) N
+() S 8 T (}) N
+(      firstCall_ = ) S
+(false) k
+(;) p n
+(    }) N
+() N
+(  ) S
+(if) K
+(\( isM0\(\) \) ) p n
+(    {) N
+(      vector<) S
+(double) k
+(> p;) p n
+(      ) S
+(double) k
+( tot = getCount\( "" \);) p n
+(      ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+() S 8 T ({) N
+() S 8 T (  string s = "";) N
+() S 8 T (  s += Node::getAlphabetChar\( i \);) N
+() S 8 T (  p.push_back\( prob\( s \) \);) S
+(//\(double\) getCount\( s \) / tot \);) c n
+() p 8 T (  ) S
+(//cout << s << " " << prob\( s \) << endl;) c n
+() p 8 T (}) N
+(      ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < l; ++i \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(double) k
+( rnd = pRand->flat\(\);) p n
+() S 8 T (  ) S
+(double) k
+( p_acc = 0;) p n
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( j = 0; j < Node::getAlphabetSize\(\); ++j \)) p n
+() S 8 T (    {) N
+() S 8 T (      p_acc += p[j];) N
+() S 8 T (      ) S
+(if) K
+(\( rnd <  p_acc \)   ) p n
+() S 8 T () S 16 T ({ ) N
+() S 8 T () S 16 T (  res += Node::getAlphabetChar\( j \);) N
+() S 8 T () S 16 T (  ) S
+(break) K
+(;) p n
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+(Tree.cpp) (Sidan 14/18) (14 sep 06 16:47) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.cpp) (13/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (15-16) 14
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (}) N
+(      ) S
+(return) K
+( res;) p n
+(    }) N
+(  ) S
+(else) K n
+(    {) p n
+(      vector<) S
+(double) k
+(> p\( Node::getAlphabetSize\(\), ) p
+(static_cast) k
+(<) p
+(double) k
+(>\(0.0\) \) ;) p n
+(      ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < l; ++i \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( j = 0; j < Node::getAlphabetSize\(\); ++j \)) p n
+() S 8 T (    {) N
+() S 8 T (      string tmp = res;) N
+() S 8 T (      ) S
+(//if\( tmp.size\(\) > 15 \) tmp = tmp.substr\( tmp.size\(\)-15, 15 \);) c n
+() p 8 T (      ) S
+(//cout << Node::getAlphabetChar\( j \) << " " << endl;) c n
+() p 8 T (      ) S
+(//draw\(\);) c n
+() p 8 T (      tmp += Node::getAlphabetChar\( j \);) N
+() S 8 T (      p[j] = prob\( tmp \);) N
+() S 8 T (      ) S
+(//) c 24 T (      if\( tmp.size\(\) > 2 \) cout << tmp.substr\( tmp.size\() N
+(\)-2,2\) << ": Sannolikheten ska inte vara noll: " << p[j] << endl;) N
+() p 8 T (    }) N
+() N
+() S 8 T (  ) S
+(double) k
+( rnd = pRand->flat\(\);) p n
+() S 8 T (  ) S
+(double) k
+( p_acc = 0;) p n
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( j = 0; j < Node::getAlphabetSize\(\); ++j \)) p n
+() S 8 T (    {) N
+() S 8 T (      p_acc += p[j];) N
+() S 8 T (      ) S
+(//) c 24 T (      cout << p_acc << endl;) N
+() p 8 T (      ) S
+(if) K
+(\( rnd <  p_acc \)   ) p n
+() S 8 T () S 16 T ({ ) N
+() S 8 T () S 16 T (  res += Node::getAlphabetChar\( j \);) N
+() S 8 T () S 16 T (  ) S
+(//) c 24 T () S 32 T (  cout << Node::getAlphabetChar\( j \) << " " << r) N
+(es << endl;) N
+() p 8 T () S 16 T (  ) S
+(//) c 24 T (  cout << res << endl;) N
+() p 8 T () S 16 T (  ) S
+(break) K
+(;) p n
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(      ) S
+(return) K
+( res;) p n
+(    }) N
+(}) N
+() N
+(void) k
+( Tree::printRandomSequence\( ) p
+(const) K
+( ) p
+(int) k
+(& l  \) ) p n
+({) N
+(  string res = "";) N
+(  ) S
+(static) K
+( ) p
+(bool) k
+( first = ) p
+(true) k
+(;) p n
+(  RandomSingleton* pRand = RandomSingleton::instance\(\);) N
+(  ) S
+(if) K
+(\( first \)) p n
+(    {) N
+(      pRand->randomize\(\);) N
+(    }) N
+(  ) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < l; ++i \)) p n
+(    {) N
+(      ) S
+(double) k
+( p1 = prob\( res + ") p
+(A) str
+(" \);) p n
+(      ) S
+(double) k
+( p2 = prob\( res + ") p
+(C) str
+(" \);) p n
+(      ) S
+(double) k
+( p3 = prob\( res + ") p
+(G) str
+(" \);) p n
+(      ) S
+(double) k
+( p4 = prob\( res + ") p
+(T) str
+(" \);) p n
+(      ) S
+(double) k
+( rnd = pRand->flat\(\);) p n
+(      ) S
+(if) K
+(\(      rnd <  p1 \)              { cout << ") p
+(A) str
+("; res += ') p
+(A) str
+('; }) p n
+(      ) S
+(else) K
+( ) p
+(if) K
+(\( rnd <  p1 + p2 \)         { cout << ") p
+(C) str
+("; res += ') p
+(C) str
+('; }) p n
+(      ) S
+(else) K
+( ) p
+(if) K
+(\( rnd <  p1 + p2 + p3 \)    { cout << ") p
+(G) str
+("; res += ') p
+(G) str
+('; }) p n
+(      ) S
+(else) K
+(                              { cout << ") p
+(T) str
+("; res += ') p
+(T) str
+('; }) p n
+(      ) S
+(if) K
+(\( \(i+1\)%100 == 0 \) ) p n
+(Tree.cpp) (Sidan 15/18) (14 sep 06 16:47) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T ({) N
+() S 8 T (  cout << endl;) N
+() S 8 T (  string tmp = "";) N
+() S 8 T (  ) S
+(if) K
+(\( res.size\(\) == 0 \) ) p
+(continue) K
+(;) p n
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( i = res.size\(\)-1; i > res.size\(\) - maxWordLength_ - 1 && i > ) p n
+(0; --i \)) N
+() S 8 T (    {) N
+() S 8 T (      tmp += res[i];) N
+() S 8 T (    }) N
+() S 8 T (  res = tmp;) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+() N
+() N
+(vector<Node*> Tree::getTerminalNodes\(\) ) S
+(const) K n
+({) p n
+(  vector<Node*> res;) N
+(  getTerminalNodes\( head_, res \);) N
+(  ) S
+(return) K
+( res;) p n
+(}) N
+() N
+(void) k
+( Tree::getTerminalNodes\( Node* pNode, vector<Node*>& res \) ) p
+(const) K n
+({) p n
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      Node* next = pNode->getNode\( i \);) N
+(      ) S
+(if) K
+(\(  next != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(if) K
+(\( next->isLeaf\(\) \)) p n
+() S 8 T (    {) N
+() S 8 T (      res.push_back\( next \);) N
+() S 8 T (    }) N
+() S 8 T (  ) S
+(else) K n
+() p 8 T (    {) N
+() S 8 T (      getTerminalNodes\( next, res \);) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+() N
+(void) k
+( Tree::removeScheduled\( Node* pNode \)) p n
+({) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)     ) p n
+(    {) N
+(      ) S
+(bool) k
+( hasRemoved = ) p
+(false) k
+(;) p n
+(      Node* next = pNode->getNode\( i \);) N
+(      ) S
+(if) K
+(\( next != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(if) K
+(\( next->schedulaToBeRemoved\(\) \)) p n
+() S 8 T (    {) N
+() S 8 T (      cleanUp\( next \);) N
+() S 8 T (      pNode->setNode\( ) S
+(NULL) K
+(, i \);) p n
+() S 8 T (      next = ) S
+(NULL) K
+(;) p n
+() S 8 T (      hasRemoved = ) S
+(true) k
+(;) p n
+() S 8 T (    }) N
+() S 8 T (  ) S
+(else) K n
+() p 8 T (    {) N
+() S 8 T (      removeScheduled\( next \);) N
+() S 8 T (    }) N
+(Tree.cpp) (Sidan 16/18) (14 sep 06 16:47) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.cpp) (14/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (17-18) 15
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (}) N
+(      ) S
+(if) K
+(\( hasRemoved \)) p n
+() S 8 T ({) N
+() S 8 T (  pNode->checkIfLeaf\(\);) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+(void) k
+( Tree::draw\(\) ) p
+(const) K n
+({) p n
+(  draw\( head_, "" \);) N
+(}) N
+() N
+(void) k
+( Tree::draw\( Node* pNode, string edge \) ) p
+(const) K
+( ) p n
+({) N
+(  ) S
+(double) k
+( c = pNode->getTotalC\(\);) p n
+() N
+() N
+(  cout << ") S
+([) str
+(" << pNode->getString\(\) <<") p
+(]--\() str
+(";) p n
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)     ) p n
+(    {) N
+(      cout << pNode->getNextSymbCount\( i \) << ") S
+( ) str
+(";) p n
+(    }) N
+() N
+(  cout << ") S
+(| ) str
+(" << c << ") p
+(\) ) str
+(";) p n
+(  ) S
+(if) K
+(\( pNode->isLeaf\(\) \) cout << ") p
+(-T ) str
+(";) p n
+(  ) S
+(if) K
+(\( pNode->getTmpData\(\) != 0 \) cout << ") p
+(<) str
+(" << pNode->getTmpData\(\) << ") p
+(>) str
+(";) p n
+(  cout << endl;) N
+() N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      ) S
+(if) K
+(\( pNode->getNode\( i \) != ) p
+(NULL) K
+( \)) p n
+() S 8 T ({) N
+() S 8 T (  cout << edge << ") S
+(+) str
+(" << ") p
+(---) str
+(";) p n
+() S 8 T (  draw\( pNode->getNode\( i \), edge + ") S
+(     ) str
+(" \);) p n
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+() N
+() N
+() N
+(double) k
+( Tree::getAIC\( ) p
+(const) K
+( string& s \) ) p n
+({) N
+(  ) S
+(if) K
+(\( ) p
+(dynamic_cast) k
+(<PstTree*>\( ) p
+(this) K
+( \) != ) p
+(NULL) K
+( \)) p n
+(    {) N
+(      ) S
+(if) K
+(\( !useAdj_ \) ) p n
+() S 8 T ({) N
+() S 8 T (  cerr << ") S
+(For AIC option do not use accumulated probs!\\n) str
+("; ) p n
+() S 8 T (  ) S
+(return) K
+( 0;) p n
+() S 8 T (}) N
+(    }) N
+(  ) S
+(double) k
+( nll = 0;) p n
+(  ) S
+(if) K
+(\( s > "" \) nll = getNLL\( s \);) p n
+(  ) S
+(else) K
+( nll = getNLL\(\);) p n
+(  ) S
+(return) K
+( 2*nll + 2*Node::getNumberParameters\(\);) p n
+(}) N
+() N
+() N
+(double) k
+( Tree::getBIC\( ) p
+(const) K
+( string& s \)) p n
+({) N
+(  ) S
+(double) k
+( nll = 0;) p n
+(Tree.cpp) (Sidan 17/18) (14 sep 06 16:47) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(  ) p
+(if) K
+(\( s > "" \) nll = getNLL\( s \);) p n
+(  ) S
+(else) K
+( nll = getNLL\(\);) p n
+(  assert\( getTotalTotal\(\) > 0 \);) N
+(  ) S
+(return) K
+( 2*nll + log\( getTotalTotal\(\) \)*Node::getNumberParameters\(\);) p n
+(}) N
+() N
+() N
+() N
+(void) k
+( Tree::getAllPatterns\( vector<string>& res, string str, ) p
+(const) K
+( ) p
+(int) k
+(& n \)) p n
+({) N
+(  ) S
+(if) K
+(\( str.size\(\) >= n \)) p n
+(    {) N
+(      res.push_back\( str \);) N
+(      ) S
+(return) K
+(;) p n
+(    }) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      string tmp = str;) N
+(      tmp += Node::getAlphabetChar\( i \);) N
+(      getAllPatterns\( res, tmp , n \);) N
+(    }) N
+(}) N
+() N
+() N
+() N
+() N
+(double) k
+( Tree::getNLL\(\)) p n
+({) N
+(  ) S
+(double) k
+( n = 0;  ) p n
+(  getNLL\( head_, n \);) N
+(  ) S
+(return) K
+( n;) p n
+(}) N
+() N
+() N
+(void) k
+( Tree::getNLL\( Node* pNode, ) p
+(double) k
+(& n \)) p n
+({ ) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < Node::getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      ) S
+(double) k
+( p = pNode->getNextSymbProb\( i \);) p n
+(      ) S
+(if) K
+(\( p > 0 \) n += pNode->getNextSymbCount\( i \)*\(-log\( p \)\);) p n
+(      Node* node = pNode->getNode\( i \);) N
+(      ) S
+(if) K
+(\( node != ) p
+(NULL) K
+( \) getNLL\( node, n \);) p n
+(    }) N
+(}) N
+() N
+() N
+() N
+(Tree.cpp) (Sidan 18/18) (14 sep 06 16:47) title
+border
+grestore
+(Utskrivet av ) rhead
+(Tree.cpp) (15/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1-2) 16
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(// Copyright \(C\) 2005 Daniel Dalevi) c n
+(// Distributed under the GNU GENERAL PUBLIC LICENSE version 2) N
+() p n
+(#ifndef) K
+( xxxPSTTREExxx) p n
+(#define) K
+( xxxPSTTREExxx) p n
+() N
+() N
+(#include) K
+( <string>) p n
+(#include) K
+( <cmath>) p n
+(#include) K
+( <vector>) p n
+(#include) K
+( ") p
+(Tree.h) str
+(") p n
+() N
+(using namespace std;) N
+() N
+(namespace trees) N
+({) N
+(  class Node;) N
+(  class Exception;) N
+(  ) N
+(  ) S
+(/**) c n
+(   * PST = Prediction suffix tree ...) N
+(   *) N
+(   */) N
+(  class PstTree : public Tree ) p n
+(  {) N
+(  public: ) N
+(    PstTree\(\) {}) N
+(    PstTree\( ) S
+(const) K
+( Alphabet*, ) p
+(const) K
+( ) p
+(int) k
+(& \); ) p n
+(    ~PstTree\(\);) N
+() N
+(    ) S
+(/**) c n
+(     * Method for inserting a string representing) N
+(     * a sequence of characters \(eg. DNA\)) N
+(     */) N
+(    ) p
+(void) k
+( insert\( ) p
+(const) K
+( string& \);) p n
+() N
+(    ) S
+(void) k
+( print\(\) { Tree::print\(\); }) p n
+(    ) S
+(void) k
+( print\( Node* p \) ) p
+(const) K
+( { Tree::print\( p \); }) p n
+(    ) S
+(//    void setDeltas\(\) { Tree::setDeltas\(\); }) c n
+() p n
+(    ) S
+(/**) c n
+(     * Will return negative log likelihood of sequence ) N
+(     * according to Markov model. The longest ) N
+(     * prefix will be used for all patterns. Depth of tree will) N
+(     * be used for the longest of all patterns ) N
+(     */) N
+(    ) p
+(double) k
+( getNLL\( ) p
+(const) K
+( string& \);) p n
+() N
+(    ) S
+(/**) c n
+(     * This function returns the NLL when adding a minimal probability) N
+(     * to counts where no counts exist. NOT YET IMPLEMENTED ....) N
+(     */) N
+(    ) p
+(double) k
+( getPseudoNLL\( ) p
+(const) K
+( string&, ) p
+(const) K
+( ) p
+(double) k
+(& \);) p n
+() N
+(    ) S
+(double) k
+( prob\( ) p
+(const) K
+( string& pat \) { ) p
+(return) K
+( Tree::prob\( pat \); }) p n
+() N
+() N
+(    ) S
+(/**) c n
+(     * This function fill remove all leaves that do not occur at ) N
+(     * least "min" number of times) N
+(     */) N
+(    ) p
+(void) k
+( constrainTree\( ) p
+(const) K
+( ) p
+(int) k
+(& \);) p n
+(PstTree.h) (Sidan 1/2) (28 jan 06 14:49) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    ) p
+(void) k
+( constrainTree\( Node*, ) p
+(const) K
+( ) p
+(int) k
+(& \);) p n
+(  };) N
+(}) N
+(#endif) K n
+(PstTree.h) (Sidan 2/2) (28 jan 06 14:49) title
+border
+grestore
+(Utskrivet av ) rhead
+(PstTree.h) (16/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1-2) 17
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(// Copyright \(C\) 2005 Daniel Dalevi) c n
+(// Distributed under the GNU GENERAL PUBLIC LICENSE version 2) N
+() p n
+(#include) K
+( ") p
+(Node.h) str
+(") p n
+(#include) K
+( ") p
+(Tree.h) str
+(") p n
+(#include) K
+( ") p
+(PstTree.h) str
+(") p n
+() N
+(using) K
+( ) p
+(namespace) K
+( std;) p n
+(using) K
+( ) p
+(namespace) K
+( trees;) p n
+() N
+() N
+(/*) c n
+( * constructors and destructors) N
+( */) N
+(PstTree::PstTree\( ) p
+(const) K
+( Alphabet* alp, ) p
+(const) K
+( ) p
+(int) k
+(& wl \)  ) p n
+(  : Tree\( alp, wl \)) N
+({) N
+(}) N
+() N
+() N
+(PstTree::~PstTree\(\)) N
+({) N
+(}) N
+() N
+() N
+(void) k
+( PstTree::insert\( ) p
+(const) K
+( string& seq \)) p n
+({) N
+(  modified\(\);) N
+(  ) S
+(if) K
+(\( !Node::wordIntegrity\( seq \) \)) p n
+(    {) N
+(      ) S
+(throw) K
+( common::Exception\( Tree::BADALPHABET, common::Exception::ERROR \);) p n
+(    }) N
+(  string seq2 = seq;) N
+(  ) S
+(//  cout << seq << endl;) c n
+(  reverse\( seq2.begin\(\), seq2.end\(\) \);) p n
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( counter = 0; counter+1 < seq2.size\(\); ++counter \) ) p n
+(    {) N
+(      string s = "";) N
+(      ) S
+(if) K
+(\( counter + maxWordLength_ > seq2.size\(\) \) ) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(for) K
+(\( ) p
+(int) k
+( i = counter; i < seq2.size\(\); ++i \)) p n
+() S 8 T (    {) N
+() S 8 T (      s += seq2[i];) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(      ) S
+(else) K n
+() p 8 T ({) N
+() S 8 T (  s = seq2.substr\( counter, maxWordLength_ \);) N
+() S 8 T (}) N
+() S 8 T (   ) N
+(      ) S
+(if) K
+(\( Node::integrity\( s \) \)) p n
+() S 8 T ({) N
+() S 8 T (  insertWord\( s \);) N
+() S 8 T (}) N
+(      ) S
+(else) K
+( ) p
+(continue) K
+(;) p n
+(    }) N
+(  setProbabilities\(\);) N
+(  removeZeroes\(\);) N
+( }) N
+() N
+(// void PstTree::insert\( const string& seq \)) c n
+(// {) N
+(PstTree.cpp) (Sidan 1/3) (13 sep 06 14:02) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(//   modified\(\);) c n
+(//   string seq2 = seq;) N
+(//   //  cout << seq << endl;) N
+(//   reverse\( seq2.begin\(\), seq2.end\(\) \);) N
+(//   for\( int counter = 0; counter+1 < seq2.size\(\); ++counter \) ) N
+(//     {) N
+(//       for\( int i = 0; i < maxWordLength_; ++i \)) N
+(//       ) S 16 T ({) N
+(//       ) S 16 T (  if\( counter + i >= seq2.size\(\) \) break;) N
+(// ) S 8 T (  string s = seq2.substr\( counter, i+1 \);) N
+(// ) S 8 T (  //  cout << "Inserting: " << s << endl;) N
+() p 8 T (  ) N
+(// ) c 8 T (  if\( Node::integrity\( s \) \)) N
+(// ) S 8 T (    {) N
+(// ) S 8 T (      insertWord\( s \);) N
+(// ) S 8 T (    }) N
+(// ) S 8 T (  else continue;) N
+(// ) S 8 T (}) N
+(//     }) N
+(//   setProbabilities\(\);) N
+(// }) N
+() p n
+() N
+(void) k
+( PstTree::constrainTree\( ) p
+(const) K
+( ) p
+(int) k
+(& min \)) p n
+({) N
+(  DEPTH = -1; ) S
+(// Tree modified) c n
+(  constrainTree\( head_, min \);  ) p n
+(}) N
+() N
+() N
+() N
+(void) k
+( PstTree::constrainTree\( Node* pNode, ) p
+(const) K
+( ) p
+(int) k
+(& min \)) p n
+({) N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < pNode->getAlphabetSize\(\); ++i \)) p n
+(    {) N
+(      Node* curNode = pNode->getNode\( i \);) N
+(      ) S
+(if) K
+(\( curNode == ) p
+(NULL) K
+( \) ) p n
+() S 8 T ({) N
+() S 8 T (  ) S
+(continue) K
+(;) p n
+() S 8 T (}) N
+(      ) S
+(else) K
+( { ) p
+(/* NADA */) c
+( }) p n
+(      ) S
+(if) K
+(\( pNode->getC\( i \) < min \)) p n
+() S 8 T ({) N
+() S 8 T (  cleanUp\( curNode \);) N
+() S 8 T (  pNode->setNode\( ) S
+(NULL) K
+(, i \);) p n
+() S 8 T (}) N
+(      ) S
+(else) K n
+() p 8 T ({) N
+() S 8 T (  constrainTree\( curNode, min \);) N
+() S 8 T (}) N
+(    }  ) N
+(}) N
+() N
+() N
+(double) k
+( PstTree::getNLL\( ) p
+(const) K
+( string& seq \)) p n
+({) N
+(  ) S
+(int) k
+( d = depth\(\) + 1;) p n
+(  ) S
+(double) k
+( n = 0;) p n
+() N
+(  ) S
+(for) K
+(\( ) p
+(int) k
+( i = 0; i < seq.size\(\); ++i \) ) p n
+(    {) N
+(      string pat = "";) N
+(PstTree.cpp) (Sidan 2/3) (13 sep 06 14:02) title
+border
+grestore
+(Utskrivet av ) rhead
+(PstTree.cpp) (17/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 18
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(      ) p
+(if) K
+(\( i - d >= 0 \) ) p n
+() S 8 T ({) N
+() S 8 T (  pat = seq.substr\( i - d + 1, d \);) N
+() S 8 T (}) N
+(      ) S
+(else) K n
+() p 8 T ({) N
+() S 8 T (  pat = seq.substr\( 0, i + 1\);) N
+() S 8 T (}) N
+() N
+(      ) S
+(double) k
+( p = prob\( pat \);) p n
+(     ) N
+(      ) S
+(if) K
+(\( !\( p > 0 && p <= 1 \) \) ) p
+(continue) K
+(;) p n
+(      n += -log\( p \);) N
+(    }) N
+(  ) S
+(return) K
+( n;) p n
+(}) N
+() N
+() N
+() N
+() N
+(double) k
+( PstTree::getPseudoNLL\( ) p
+(const) K
+( string& seq, ) p
+(const) K
+( ) p
+(double) k
+(& pmin \)) p n
+({) N
+(  ) S
+(// The meaning of this function in a variable context must be) c n
+(  ) p
+(// considered ....) c n
+(  PstTree::getNLL\( seq \);) p n
+(}) N
+(PstTree.cpp) (Sidan 3/3) (13 sep 06 14:02) title
+border
+grestore
+(Utskrivet av ) rhead
+(PstTree.cpp) (18/18) (tisdagen den 24 oktober 2006) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF
